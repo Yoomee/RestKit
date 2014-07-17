@@ -19,7 +19,7 @@ namespace :test do
   task :kill_simulator do
     system(%q{killall -m -KILL "iPhone Simulator"})
   end
-  
+
   namespace :logic do
     desc "Run the logic tests for iOS"
     task :ios => :kill_simulator do
@@ -30,7 +30,7 @@ namespace :test do
       builder.objroot = build_dir
     	builder.test(:sdk => 'iphonesimulator')
     end
-    
+
     desc "Run the logic tests for OS X"
     task :osx do
       config = Xcode.project(:RestKit).target(:RestKitFrameworkTests).config(:Debug)
@@ -40,11 +40,11 @@ namespace :test do
       builder.objroot = build_dir
     	builder.test(:sdk => 'macosx')
     end
-  end    
-  
+  end
+
   desc "Run the unit tests for iOS and OS X"
   task :logic => ['logic:ios', 'logic:osx']
-  
+
   namespace :application do
     desc "Run the application tests for iOS"
     task :ios => :kill_simulator do
@@ -56,10 +56,10 @@ namespace :test do
     	builder.test(:sdk => 'iphonesimulator')
     end
   end
-  
+
   desc "Run the application tests for iOS"
   task :application => 'application:ios'
-  
+
   desc "Run all tests for iOS and OS X"
   task :all do
     Rake.application.invoke_task("test:logic")
@@ -70,7 +70,7 @@ namespace :test do
     puts "\033[0;31m!! Integration Tests failed with exit status of #{integration_status}" if integration_status != 0
     puts "\033[0;32m** All Tests executed successfully" if unit_status == 0 && integration_status == 0
   end
-  
+
   task :check_mongodb do
     port_check = RestKit::Server::PortCheck.new('127.0.0.1', 27017)
     port_check.run
@@ -119,7 +119,6 @@ task :build do
   run("xcodebuild -workspace RestKit.xcodeproj/project.xcworkspace -scheme RestKit -sdk iphonesimulator5.0 clean build")
   run("xcodebuild -workspace RestKit.xcodeproj/project.xcworkspace -scheme RestKit -sdk iphoneos clean build")
   run("xcodebuild -workspace RestKit.xcodeproj/project.xcworkspace -scheme RestKit -sdk macosx10.6 clean build")
-  run("xcodebuild -workspace Examples/RKCatalog/RKCatalog.xcodeproj/project.xcworkspace -scheme RKCatalog -sdk iphoneos clean build")
 end
 
 desc "Generate documentation via appledoc"
@@ -131,7 +130,7 @@ namespace :docs do
     run(command, 1)
     puts "Generated HTML documentationa at Docs/API/html"
   end
-  
+
   desc "Check that documentation can be built from the source code via appledoc successfully."
   task :check do
     command = apple_doc_command << " --no-create-html --verbose 5 Code/"
@@ -145,21 +144,21 @@ namespace :docs do
       exit(exitstatus)
     else
       puts "!! appledoc generation failed with a fatal error"
-    end    
+    end
     exit(exitstatus)
   end
-  
+
   desc "Generate & install a docset into Xcode from the current sources"
   task :install do
     command = apple_doc_command << " --install-docset Code/"
     run(command, 1)
   end
-  
+
   desc "Build and publish the documentation set to the remote server (using rsync over SSH)"
   task :publish, :version, :destination do |t, args|
     args.with_defaults(:version => File.read("VERSION").chomp, :destination => "restkit.org:/var/www/public/restkit.org/public/api/")
     version = args[:version]
-    destination = args[:destination]    
+    destination = args[:destination]
     puts "Generating RestKit docset for version #{version}..."
     command = apple_doc_command <<
             " --keep-intermediate-files" <<
@@ -171,7 +170,7 @@ namespace :docs do
     versioned_destination = File.join(destination, version)
     command = "rsync -rvpPe ssh --delete Docs/API/html/ #{versioned_destination}"
     run(command)
-    
+
     if $?.exitstatus == 0
       command = "rsync -rvpPe ssh Docs/API/publish/ #{destination}"
       run(command)
@@ -185,7 +184,7 @@ namespace :build do
     ios_sdks = %w{iphoneos iphonesimulator5.0}
     osx_sdks = %w{macosx}
     osx_projects = %w{RKMacOSX}
-    
+
     examples_path = File.join(File.expand_path(File.dirname(__FILE__)), 'Examples')
     example_projects = `find #{examples_path} -name '*.xcodeproj'`.split("\n")
     puts "Building #{example_projects.size} Example projects..."
@@ -203,7 +202,7 @@ namespace :build do
 end
 
 desc "Validate a branch is ready for merging by checking for common issues"
-task :validate => [:build, 'docs:check', 'uispec:all'] do  
+task :validate => [:build, 'docs:check', 'uispec:all'] do
   puts "Project state validated successfully. Proceed with merge."
 end
 
@@ -211,7 +210,7 @@ namespace :payload do
   task :generate do
     require 'json'
     require 'faker'
-    
+
     ids = (1..25).to_a
     child_ids = (50..100).to_a
     child_counts = (10..25).to_a
